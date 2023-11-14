@@ -149,10 +149,10 @@ class LnasGeometry:
 
         return dct
 
-    def apply_transformation(self, transf: TransformationsMatrix):
+    def apply_transformation(self, transf: TransformationsMatrix, invert_transf: bool = False):
         """Apply transformation in geometry"""
 
-        self.vertices = transf.apply_points(self.vertices)
+        self.vertices = transf.apply_points(self.vertices, invert_transf=invert_transf)
         self._full_update()
 
     def binary_stl(self) -> bytes:
