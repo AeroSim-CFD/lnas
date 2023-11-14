@@ -153,7 +153,7 @@ class LnasFormat:
             triangles_use (np.ndarray): bool array of triangles to use
 
         Returns:
-            LagrangianFormat: New LNAS with surfaces and geometry filtered
+            LnasFormat: New LNAS with surfaces and geometry filtered
         """
 
         if len(triangles_use) != self.geometry.triangles.shape[0]:

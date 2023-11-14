@@ -167,7 +167,9 @@ class TransformationsMatrix:
             M = np.matmul(o, M)
         return M
 
-    def apply(self, arr: np.ndarray, arr_type: Literal["point", "vector"]) -> np.ndarray:
+    def apply(
+        self, arr: np.ndarray, arr_type: Literal["point", "vector"], is_inverse: bool = False
+    ) -> np.ndarray:
         if arr.shape[1] != 3:
             raise ValueError("Array points must be 3D to be transformed")
         # Point transformation appends 1 (has translation), vector appends 0 (no translation)
@@ -185,8 +187,8 @@ class TransformationsMatrix:
 
         return arr_transf
 
-    def apply_points(self, arr: np.ndarray) -> np.ndarray:
-        return self.apply(arr, arr_type="point")
+    def apply_points(self, arr: np.ndarray, is_inverse: bool = False) -> np.ndarray:
+        return self.apply(arr, arr_type="point", is_inverse=is_inverse)
 
-    def apply_vectors(self, arr: np.ndarray) -> np.ndarray:
-        return self.apply(arr, arr_type="vector")
+    def apply_vectors(self, arr: np.ndarray, is_inverse: bool = False) -> np.ndarray:
+        return self.apply(arr, arr_type="vector", is_inverse=is_inverse)
