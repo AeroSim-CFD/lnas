@@ -168,7 +168,7 @@ class TransformationsMatrix:
         return M
 
     def apply(
-        self, arr: np.ndarray, arr_type: Literal["point", "vector"], is_inverse: bool = False
+        self, arr: np.ndarray, arr_type: Literal["point", "vector"], invert_transf: bool = False
     ) -> np.ndarray:
         if arr.shape[1] != 3:
             raise ValueError("Array points must be 3D to be transformed")
@@ -179,7 +179,7 @@ class TransformationsMatrix:
             col_add = np.zeros((arr.shape[0], 1), dtype=arr.dtype)
 
         M = self.transformation_matrix
-        if is_inverse:
+        if invert_transf:
             M = np.linalg.inv(M)
 
         # Add column to operate transformation
@@ -191,8 +191,8 @@ class TransformationsMatrix:
 
         return arr_transf
 
-    def apply_points(self, arr: np.ndarray, is_inverse: bool = False) -> np.ndarray:
-        return self.apply(arr, arr_type="point", is_inverse=is_inverse)
+    def apply_points(self, arr: np.ndarray, invert_transf: bool = False) -> np.ndarray:
+        return self.apply(arr, arr_type="point", invert_transf=invert_transf)
 
-    def apply_vectors(self, arr: np.ndarray, is_inverse: bool = False) -> np.ndarray:
-        return self.apply(arr, arr_type="vector", is_inverse=is_inverse)
+    def apply_vectors(self, arr: np.ndarray, invert_transf: bool = False) -> np.ndarray:
+        return self.apply(arr, arr_type="vector", invert_transf=invert_transf)
