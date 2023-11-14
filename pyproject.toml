@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "lnas"
+version = "0.4.0"
+description = "API for Lagrangian Nassu"
+authors = ["Waine Oliveira Jr <waine@aerosim.io>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^1.26.2"
+ruamel-yaml = "^0.18.5"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.11.0"
+isort = "^5.12.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+include = '(\.pyi?$|\.ipynb)'
+line-length = 99
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 99
+src_paths = ["nassu", "tests", "scripts"]
+skip_glob = ["**/__init__.py"] # avoid circular imports

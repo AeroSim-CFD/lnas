@@ -1,0 +1,10 @@
+---
+stl:
+  files:
+    cube: examples/stl/cube.stl
+name: cube
+normalization:
+  size: 10.0
+  direction: x
+output:
+  folder: output/cube

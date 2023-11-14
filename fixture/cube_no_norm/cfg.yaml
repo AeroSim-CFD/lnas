@@ -1,0 +1,8 @@
+---
+stl:
+  files:
+    cube: examples/stl/cube.stl
+name: cube_no_norm
+normalization: ~
+output:
+  folder: output/cube_no_norm
