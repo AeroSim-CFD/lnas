@@ -66,6 +66,20 @@ class TestTransformationMatrix(unittest.TestCase):
         # Right hand rule
         np.testing.assert_almost_equal(vecs_transf, [[1.5, 2, 0.5], [3, 3, 0.25]], decimal=5)
 
+    def test_apply_inverse_transformation(self):
+        arr = np.array([[1, 1, 1], [2, 1.5, 0.5], [-1, 0, 3]])
+        m = TransformationsMatrix(
+            scale=np.array([1.5, 2, 0.5]),
+            translation=np.array([1, 2, 3]),
+            angle=np.array([0.1, 0.2, -0.5]),
+            fixed_point=np.array([10, 1, -5]),
+        )
+
+        for v_type in ("point", "vector"):
+            tm = m.apply(arr, v_type, is_inverse=False)
+            t = m.apply(tm, v_type, is_inverse=True)
+            np.testing.assert_almost_equal(t, arr, decimal=5)
+
 
 if __name__ == "__main__":
     unittest.main()

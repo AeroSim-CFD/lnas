@@ -178,10 +178,14 @@ class TransformationsMatrix:
         elif arr_type == "vector":
             col_add = np.zeros((arr.shape[0], 1), dtype=arr.dtype)
 
+        M = self.transformation_matrix
+        if is_inverse:
+            M = np.linalg.inv(M)
+
         # Add column to operate transformation
         arr_transf = np.append(arr, col_add, axis=1)
         # Apply transformation
-        arr_transf = np.matmul(self.transformation_matrix, arr_transf.T)
+        arr_transf = np.matmul(M, arr_transf.T)
         # Remove 0 or 1 added
         arr_transf = arr_transf.T[:, :3]
 
