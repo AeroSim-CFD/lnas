@@ -2,7 +2,6 @@ import io
 import unittest
 
 import numpy as np
-
 from lnas.stl import read_stl, stl_binary
 
 

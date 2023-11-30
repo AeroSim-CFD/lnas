@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import base64
 import pathlib
-from dataclasses import asdict, dataclass
-from typing import Any, Optional
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 from lnas import LnasGeometry
 from lnas.exceptions import LnasVersionError
 from lnas.utils import read_yaml, save_yaml
 
-_CURR_MAJOR_VERSION = "v0.4"
+_SUPPORTED_MAJOR_VERSIONS = ("v0.5", "v0.4")
 
 
 @dataclass
@@ -24,8 +24,6 @@ class LnasFormat:
     """Lagrangian format description"""
 
     version: str
-    name: str
-    normalization: Optional[LagrangianNormalization]
     geometry: LnasGeometry
     surfaces: dict[str, np.ndarray]
 
@@ -35,8 +33,6 @@ class LnasFormat:
 
         if not (
             self.version == __o.version
-            and self.name == __o.name
-            and self.normalization == __o.normalization
             and self.geometry == __o.geometry
             and set(self.surfaces.keys()) == set(__o.surfaces.keys())
         ):
@@ -63,16 +59,10 @@ class LnasFormat:
         """Load lagrangian format from dictionary"""
 
         version = str(dct["version"])
-        if version[:-2] != _CURR_MAJOR_VERSION:
+        if all(version[:-2] != c for c in _SUPPORTED_MAJOR_VERSIONS):
             raise LnasVersionError(
-                f"LNAS version {version} is uncompatible with reader version {_CURR_MAJOR_VERSION}"
+                f"LNAS version {version} is uncompatible with reader version {_SUPPORTED_MAJOR_VERSIONS}"
             )
-        name = str(dct["name"])
-        normalization = (
-            LagrangianNormalization(**dct["normalization"])
-            if dct["normalization"] is not None
-            else None
-        )
         geometry = LnasGeometry.from_dct(dct["geometry"])
         surfaces: dict[str, np.ndarray] = {}
         for surface_name, surface_b64 in dct["surfaces"].items():
@@ -82,8 +72,6 @@ class LnasFormat:
 
         return LnasFormat(
             version=version,
-            name=name,
-            normalization=normalization,
             geometry=geometry,
             surfaces=surfaces,
         )
@@ -91,12 +79,8 @@ class LnasFormat:
     def to_dct(self) -> dict[str, Any]:
         """Get lagrangian format as dictionary"""
 
-        dct = {}
+        dct: dict[str, Any] = {}
         dct["version"] = str(self.version)
-        dct["name"] = str(self.name)
-        dct["normalization"] = (
-            asdict(self.normalization) if self.normalization is not None else None
-        )
         dct["geometry"] = self.geometry.to_dct()
         dct["surfaces"] = {}
         for surface_name, surface_arr in self.surfaces.items():
@@ -115,21 +99,6 @@ class LnasFormat:
             return cls.from_dct(dct_lnas)
         except Exception as e:
             raise ValueError(f"Unable to read LNAS file {filename}") from e
-
-    @classmethod
-    def from_folder(cls, foldername: pathlib.Path, transformed: bool = False) -> LnasFormat:
-        """Load lagrangian format from folder"""
-
-        filename_cfg = foldername / "cfg.yaml"
-        try:
-            dct_cfg = read_yaml(filename_cfg)
-            name = dct_cfg["name"]
-        except Exception as e:
-            raise FileNotFoundError(f"Unable to get LNAS name for folder {foldername}") from e
-        if transformed:
-            name += ".transformed"
-        filename = foldername / (name + ".lnas")
-        return cls.from_file(filename)
 
     def to_file(self, filename: pathlib.Path):
         """Save lagrangian format to file"""
@@ -186,12 +155,6 @@ class LnasFormat:
             filtered_arr -= filtered_offset_arr
             new_surfaces[s] = filtered_arr
 
-        new_lnas = LnasFormat(
-            version=self.version,
-            name=self.name,
-            normalization=self.normalization,
-            geometry=new_geometry,
-            surfaces=new_surfaces,
-        )
+        new_lnas = LnasFormat(version=self.version, geometry=new_geometry, surfaces=new_surfaces)
 
         return new_lnas

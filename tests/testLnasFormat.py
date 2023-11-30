@@ -8,26 +8,22 @@ from lnas import LnasFormat, TransformationsMatrix
 
 class TestLnasFormat(unittest.TestCase):
     def test_cube_lnas_reading(self):
-        foldername = pathlib.Path("fixture/cube")
-        cube = LnasFormat.from_folder(foldername)
-
-        self.assertEqual(cube.name, "cube")
+        filename = pathlib.Path("fixture/cube.lnas")
+        cube = LnasFormat.from_file(filename)
 
         geometry = cube.geometry
         self.assertEqual(len(geometry.vertices), 8)
         self.assertEqual(len(geometry.triangles), 6 * 2)
 
-        norm_term = cube.normalization.size
+        norm_term = geometry.vertices[:, 0].max()
         # For all combinations of vertices in a cube
         for p0, p1, p2 in itertools.product(*[[0, 1]] * 3):
             lagr_vert = (p0 * norm_term, p1 * norm_term, p2 * norm_term)
             self.assertIn(lagr_vert, geometry.vertices)
 
     def test_cube_lnas_from_surface(self):
-        foldername = pathlib.Path("fixture/cube")
-        cube = LnasFormat.from_folder(foldername)
-
-        self.assertEqual(cube.name, "cube")
+        filename = pathlib.Path("fixture/cube.lnas")
+        cube = LnasFormat.from_file(filename)
 
         geometry_surface = cube.geometry_from_surface("cube")
         self.assertEqual(geometry_surface, cube.geometry)
@@ -36,10 +32,10 @@ class TestLnasFormat(unittest.TestCase):
             cube.geometry_from_surface("not_surface")
 
     def test_cube_lnas_transformation(self):
-        foldername = pathlib.Path("fixture/cube")
-        cube = LnasFormat.from_folder(foldername)
+        filename = pathlib.Path("fixture/cube.lnas")
+        cube = LnasFormat.from_file(filename)
         geometry = cube.geometry
-        norm_val = cube.normalization.size
+        norm_val = geometry.vertices[:, 0].max()
 
         translation = (1, 4, 2)
         scale = (1, 2, 3)
@@ -53,8 +49,8 @@ class TestLnasFormat(unittest.TestCase):
         self.assertEqual(max_pos, tuple(translation[d] + scale[d] * norm_val for d in range(3)))
 
     def test_cube_triangles_normal(self):
-        foldername = pathlib.Path("fixture/cube")
-        geometry_fmt = LnasFormat.from_folder(foldername)
+        filename = pathlib.Path("fixture/cube.lnas")
+        geometry_fmt = LnasFormat.from_file(filename)
         geometry = geometry_fmt.geometry
 
         translation = (1, 4, 2)
@@ -72,9 +68,9 @@ class TestLnasFormat(unittest.TestCase):
         triangle_normals_rot = geometry.normals
         self.assertFalse(np.allclose(triangle_normals_rot, triangle_normals_first))
 
-    def check_save(self, lnas_foldername: str | pathlib.Path):
-        lnas_foldername = pathlib.Path(lnas_foldername)
-        lnas_fmt = LnasFormat.from_folder(lnas_foldername)
+    def check_save(self, lnas_filename: str | pathlib.Path):
+        lnas_filename = pathlib.Path(lnas_filename)
+        lnas_fmt = LnasFormat.from_file(lnas_filename)
         geometry = lnas_fmt.geometry
 
         translation = (1, 4, 2)
@@ -87,13 +83,13 @@ class TestLnasFormat(unittest.TestCase):
         cylinder_load = LnasFormat.from_file(filename)
 
         self.assertEqual(lnas_fmt, cylinder_load)
-        cylinder_intact = LnasFormat.from_folder(lnas_foldername)
+        cylinder_intact = LnasFormat.from_file(lnas_filename)
         self.assertNotEqual(cylinder_intact, cylinder_load)
 
     def test_filter_triangles(self):
-        lnas_foldername = "fixture/cylinder"
-        lnas_foldername = pathlib.Path(lnas_foldername)
-        lnas_fmt = LnasFormat.from_folder(lnas_foldername)
+        lnas_filename = "fixture/cylinder.lnas"
+        lnas_filename = pathlib.Path(lnas_filename)
+        lnas_fmt = LnasFormat.from_file(lnas_filename)
 
         n_triangles = len(lnas_fmt.geometry.triangles)
         triangles_arange = np.arange(n_triangles, dtype=np.uint32)
@@ -146,14 +142,14 @@ class TestLnasFormat(unittest.TestCase):
                 self.assertNotIn(tuple(t), [tuple(tt) for tt in arr])
 
     def test_cylinder_save(self):
-        self.check_save("fixture/cylinder")
+        self.check_save("fixture/cylinder.lnas")
 
     def test_cube_no_norm(self):
-        self.check_save("fixture/cube_no_norm")
+        self.check_save("fixture/cube_no_norm.lnas")
 
     def test_export_stl(self):
-        lnas_foldername = pathlib.Path("fixture/cylinder")
-        geometry = LnasFormat.from_folder(lnas_foldername)
+        lnas_filename = pathlib.Path("fixture/cylinder.lnas")
+        geometry = LnasFormat.from_file(lnas_filename)
         filename = pathlib.Path("output/test.stl")
         geometry.export_stl(filename)
 

@@ -53,7 +53,7 @@ class TestLnasGeometry(unittest.TestCase):
                 self.assertFalse(triangles_filtered[t_idx])
 
     def test_geometry_filter_triangles_cylinder(self):
-        filename = pathlib.Path("fixture/cylinder/cylinder.lnas")
+        filename = pathlib.Path("fixture/cylinder.lnas")
         cylinder = LnasFormat.from_file(filename)
 
         start, end = (0, 0, 0), (2, 5, 1)
