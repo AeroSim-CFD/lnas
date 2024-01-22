@@ -102,7 +102,7 @@ class TransformationsMatrix:
                 tuple(self.angle),
                 tuple(self.translation),
                 tuple(self.fixed_point),
-                tuple(self.fixed_point),
+                tuple(self.scale),
             )
         )
 
