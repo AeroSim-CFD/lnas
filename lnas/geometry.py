@@ -202,3 +202,19 @@ class LnasGeometry:
                 bool_triangles[t_idx] = True
 
         return bool_triangles
+
+    def join(self, geometries_list: list[LnasGeometry]):
+        """Join into this geometry a list of LnasGeometry
+
+        Args:
+            geometries_list (list[LnasGeometry]): List of LnasGeometry to be combined
+        """
+        if len(geometries_list) < 1:
+            raise ValueError("No geometry to combine. It must be a list of at least two LnasGeometry")
+
+        for geometry in geometries_list:
+            new_tri = geometry.triangles.copy() + len(self.vertices)
+            self.vertices = np.vstack((self.vertices, geometry.vertices.copy()))
+            self.triangles = np.vstack((new_tri, geometry.triangles.copy()))
+
+        self._full_update()
