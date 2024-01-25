@@ -10,9 +10,21 @@ class TestFunctions(unittest.TestCase):
         vertices = np.array([[0, 0, 0], [0, 10, 0], [10, 0, 0], [10, 10, 0]])
         triangles = np.array([[0, 1, 2], [1, 3, 2]])
         geometry = LnasGeometry(vertices=vertices, triangles=triangles)
+        other_geometry = geometry.copy()
+        other_geometry.vertices[:, 2] += 10
         self.mesh = LnasFormat(
             version="",
             geometry=geometry,
+            surfaces={"sfc1": np.array([0]), "sfc2": np.array([1])},
+        )
+        self.other_mesh = LnasFormat(
+            version="",
+            geometry=other_geometry,
+            surfaces={"sfc1": np.array([0]), "sfc2": np.array([1])},
+        )
+        self.other_mesh_same_surfaces = LnasFormat(
+            version="",
+            geometry=other_geometry,
             surfaces={"sfc1": np.array([0]), "sfc2": np.array([1])},
         )
 
@@ -42,26 +54,27 @@ class TestFunctions(unittest.TestCase):
         self.assertTrue(triangle_idx == np.array([0]))
 
     def test_combine_geometries(self):
-        geometry_list = [
-            LnasGeometry(
-                vertices=np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]]),
-                triangles=np.array([[0, 1, 2]]),
-            ),
-            LnasGeometry(
-                vertices=np.array([[1, 0, 0], [0, 1, 0], [1, 1, 0]]),
-                triangles=np.array([[0, 1, 2]]),
-            ),
-        ]
-
+        geometry_list = [self.mesh.geometry, self.other_mesh.geometry]
         geometry = combine_geometries(geometry_list)
+        expected_tri = np.array([[4, 5, 6], [5, 7, 6], [0, 1, 2], [1, 3, 2]])
 
         self.assertIsInstance(geometry, LnasGeometry)
-        self.assertTrue((geometry.triangles == np.array([[3, 4, 5], [0, 1, 2]])).all())
-        self.assertTrue(len(geometry.vertices) == 6)
+        self.assertTrue((geometry.triangles == expected_tri).all())
+        self.assertTrue(len(geometry.vertices) == 8)
 
     def test_combine_format(self):
-        # Should use lnas as fixtures or a mock geometry?
-        ...
+        combined_lnas = combine_lnas(
+            lnas_fmts=[self.mesh, self.other_mesh], surfaces_suffixes=["_sfc1", "_sfc2"]
+        )
+        expected_tri = np.array([[0, 1, 2], [1, 3, 2], [4, 5, 6], [5, 7, 6]])
+        expected_sfcs = [k + "_sfc1" for k in self.mesh.surfaces.keys()] + [
+            k + "_sfc2" for k in self.mesh.surfaces.keys()
+        ]
+
+        self.assertIsInstance(combined_lnas, LnasFormat)
+        self.assertEqual(len(combined_lnas.geometry.vertices), 8)
+        self.assertTrue((combined_lnas.geometry.triangles == expected_tri).all())
+        self.assertTrue(list(combined_lnas.surfaces.keys()) == expected_sfcs)
 
 
 if __name__ == "__main__":
