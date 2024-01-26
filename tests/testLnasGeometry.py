@@ -16,7 +16,7 @@ class TestLnasGeometry(unittest.TestCase):
         geometry = geometry.copy()
         geometry.join([other_geometry])
 
-        expected_tri = np.array([[4, 5, 6], [5, 7, 6], [0, 1, 2], [1, 3, 2]])
+        expected_tri = np.array([[0, 1, 2], [1, 3, 2], [4, 5, 6], [5, 7, 6]])
 
         self.assertIsInstance(geometry, LnasGeometry)
         self.assertTrue((geometry.triangles == expected_tri).all())
