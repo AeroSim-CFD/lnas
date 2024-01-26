@@ -6,6 +6,22 @@ from lnas import LnasFormat, LnasGeometry
 
 
 class TestLnasGeometry(unittest.TestCase):
+    def test_join_geometries(self):
+        vertices = np.array([[0, 0, 0], [0, 10, 0], [10, 0, 0], [10, 10, 0]])
+        triangles = np.array([[0, 1, 2], [1, 3, 2]])
+        geometry = LnasGeometry(vertices=vertices, triangles=triangles)
+        other_geometry = geometry.copy()
+        other_geometry.vertices[:, 2] += 10
+
+        geometry = geometry.copy()
+        geometry.join([other_geometry])
+
+        expected_tri = np.array([[4, 5, 6], [5, 7, 6], [0, 1, 2], [1, 3, 2]])
+
+        self.assertIsInstance(geometry, LnasGeometry)
+        self.assertTrue((geometry.triangles == expected_tri).all())
+        self.assertTrue(len(geometry.vertices) == 8)
+
     def test_geometry_normal_and_area(self):
         verts_pos = vp = np.array([(0, 0, 0), (1, 0, 0), (0, 1, 0)], dtype=np.float32)
         # Normal positive and normal negative

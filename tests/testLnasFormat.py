@@ -3,10 +3,62 @@ import pathlib
 import unittest
 
 import numpy as np
-from lnas import LnasFormat, TransformationsMatrix
+from lnas import LnasFormat, TransformationsMatrix, LnasGeometry
 
 
 class TestLnasFormat(unittest.TestCase):
+    def setUp(self):
+        vertices = np.array([[0, 0, 0], [0, 10, 0], [10, 0, 0], [10, 10, 0]])
+        triangles = np.array([[0, 1, 2], [1, 3, 2]])
+        geometry = LnasGeometry(vertices=vertices, triangles=triangles)
+        other_geometry = geometry.copy()
+        other_geometry.vertices[:, 2] += 10
+        self.mesh = LnasFormat(
+            version="",
+            geometry=geometry,
+            surfaces={"sfc1": np.array([0]), "sfc2": np.array([1])},
+        )
+        self.other_mesh = LnasFormat(
+            version="",
+            geometry=other_geometry,
+            surfaces={"sfc1": np.array([0]), "sfc2": np.array([1])},
+        )
+        self.other_mesh_same_surfaces = LnasFormat(
+            version="",
+            geometry=other_geometry,
+            surfaces={"sfc1": np.array([0]), "sfc2": np.array([1])},
+        )
+
+    def test_excluded_surface_not_in_mesh(self):
+        sfc_list = ["sfc3"]
+        with self.assertRaises(KeyError) as context:
+            self.mesh.geometry_from_list_surfaces(sfc_list)
+
+        self.assertTrue(len(str(context.exception)) > 0)
+
+    def test_filter_surface_from_list(self):
+        sfc_list = ["sfc1"]
+
+        geometry, triangle_idx = self.mesh.geometry_from_list_surfaces(sfc_list)
+
+        self.assertIsInstance(geometry, LnasGeometry)
+        self.assertIsInstance(triangle_idx, np.ndarray)
+
+        self.assertTrue(triangle_idx == np.array([0]))
+
+    def test_join_lnas(self):
+        combined_lnas = self.mesh.copy()
+        combined_lnas.join([self.other_mesh], ["_sfc2"])
+        expected_tri = np.array([[0, 1, 2], [1, 3, 2], [4, 5, 6], [5, 7, 6]])
+        expected_sfcs = [k for k in self.mesh.surfaces.keys()] + [
+            k + "_sfc2" for k in self.mesh.surfaces.keys()
+        ]
+
+        self.assertIsInstance(combined_lnas, LnasFormat)
+        self.assertEqual(len(combined_lnas.geometry.vertices), 8)
+        self.assertTrue((combined_lnas.geometry.triangles == expected_tri).all())
+        self.assertTrue(list(combined_lnas.surfaces.keys()) == expected_sfcs)
+
     def test_cube_lnas_reading(self):
         filename = pathlib.Path("fixture/cube.lnas")
         cube = LnasFormat.from_file(filename)
