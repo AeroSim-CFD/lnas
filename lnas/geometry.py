@@ -210,11 +210,13 @@ class LnasGeometry:
             geometries_list (list[LnasGeometry]): List of LnasGeometry to be combined
         """
         if len(geometries_list) < 1:
-            raise ValueError("No geometry to combine. It must be a list of at least two LnasGeometry")
+            raise ValueError(
+                "No geometry to combine. It must be a list of at least two LnasGeometry"
+            )
 
         for geometry in geometries_list:
             new_tri = geometry.triangles.copy() + len(self.vertices)
             self.vertices = np.vstack((self.vertices, geometry.vertices.copy()))
-            self.triangles = np.vstack((new_tri, geometry.triangles.copy()))
+            self.triangles = np.vstack((self.triangles, new_tri))
 
         self._full_update()
