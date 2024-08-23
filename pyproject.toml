@@ -43,3 +43,9 @@ multi_line_output = 3
 line_length = 99
 src_paths = ["nassu", "tests", "scripts"]
 skip_glob = ["**/__init__.py"] # avoid circular imports
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
+python_files = ["test*.py"]
