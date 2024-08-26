@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+
 from lnas import LnasGeometry
 from lnas.exceptions import LnasVersionError
 from lnas.utils import read_yaml, save_yaml
