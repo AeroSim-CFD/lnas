@@ -41,7 +41,7 @@ target-version = ['py310']
 profile = "black"
 multi_line_output = 3
 line_length = 99
-src_paths = ["nassu", "tests", "scripts"]
+src_paths = ["lnas", "tests", "scripts"]
 skip_glob = ["**/__init__.py"] # avoid circular imports
 
 [tool.pytest.ini_options]
