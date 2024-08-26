@@ -23,7 +23,7 @@ jobs:
 
       - name: Format files
         run: |
-          black .
+          black --config ./pyproject.toml .
           isort .
 
       - name: Check for changes after formatting
