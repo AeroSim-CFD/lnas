@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+
 from lnas import LnasGeometry
 from lnas.exceptions import LnasVersionError
 from lnas.utils import read_yaml, save_yaml
@@ -57,7 +58,7 @@ class LnasFormat:
 
         Returns:
             LnasGeometry: Geometry representing surface
-        """        
+        """
         if surface_name not in self.surfaces:
             raise KeyError(
                 f"Unable to find surface named {surface_name}. "
@@ -69,7 +70,9 @@ class LnasFormat:
         vertices = self.geometry.vertices.copy()
         return LnasGeometry(vertices=vertices, triangles=triangles)
 
-    def geometry_from_list_surfaces(self, surfaces_names: list[str]) -> tuple[LnasGeometry, np.ndarray]:
+    def geometry_from_list_surfaces(
+        self, surfaces_names: list[str]
+    ) -> tuple[LnasGeometry, np.ndarray]:
         """Build geometry from list of surfaces
 
         Args:
@@ -78,9 +81,9 @@ class LnasFormat:
         Returns:
             tuple[LnasGeometry, np.ndarray]: geometry and the array with the original triangle idxs
         """
-        triangles_use = np.zeros((len(self.geometry.triangles), ), dtype=bool)
+        triangles_use = np.zeros((len(self.geometry.triangles),), dtype=bool)
         for s in surfaces_names:
-            if(s not in self.surfaces):
+            if s not in self.surfaces:
                 raise KeyError(f"Surface named {s} not in LNAS")
             s_tri_idxs = self.surfaces[s]
             triangles_use[s_tri_idxs] = True
@@ -218,10 +221,14 @@ class LnasFormat:
             n_verts, n_tris = len(self.geometry.vertices), len(self.geometry.triangles)
 
             verts_add = lnas_fmt.geometry.vertices.copy()
-            self.geometry.vertices = np.concatenate((self.geometry.vertices.copy(), verts_add), axis=0)
+            self.geometry.vertices = np.concatenate(
+                (self.geometry.vertices.copy(), verts_add), axis=0
+            )
 
             tri_add = lnas_fmt.geometry.triangles + n_verts
-            self.geometry.triangles = np.concatenate((self.geometry.triangles.copy(), tri_add), axis=0)
+            self.geometry.triangles = np.concatenate(
+                (self.geometry.triangles.copy(), tri_add), axis=0
+            )
 
             suffix = surfaces_suffixes[i] if surfaces_suffixes is not None else ""
             for s, arr in lnas_fmt.surfaces.items():
@@ -233,4 +240,3 @@ class LnasFormat:
                 self.surfaces[key] = arr + n_tris
 
         self.geometry._full_update()
-

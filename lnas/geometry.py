@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+
 from lnas import TransformationsMatrix
 from lnas.stl import stl_binary
 

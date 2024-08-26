@@ -2,6 +2,7 @@ import pathlib
 import unittest
 
 import numpy as np
+
 from lnas import LnasFormat, LnasGeometry
 
 

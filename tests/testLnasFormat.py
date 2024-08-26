@@ -3,7 +3,8 @@ import pathlib
 import unittest
 
 import numpy as np
-from lnas import LnasFormat, TransformationsMatrix, LnasGeometry
+
+from lnas import LnasFormat, LnasGeometry, TransformationsMatrix
 
 
 class TestLnasFormat(unittest.TestCase):
