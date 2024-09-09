@@ -4,31 +4,35 @@ on:
   release:
     types: [published]
 
+# Cancel previous jobs that are running
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
 jobs:
   build-and-upload:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.DEPLOY_KEY_LNAS }}
 
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install .
-          pip install poetry
+          pip install -U poetry
 
       - name: Build the project with Poetry
         run: poetry build
 
       - name: List files in dist directory
-        run: ls -al ./dist
+        run: |
+          poetry build
+          mv ./dist/* ./
 
       - name: Extract version
         run: |
@@ -36,24 +40,9 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "Extracted version: ${GITHUB_REF##*/v}"
 
-      - name: Upload Release Asset Zip
-        id: upload-release-asset-zip
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./dist/cfdmod-${{ env.VERSION }}.tar.gz
-          asset_name: ./dist/cfdmod-release-${{ env.VERSION }}.tar.gz
-          asset_content_type: application/zip
-
-      - name: Upload Release Asset Wheel
-        id: upload-release-asset-wheel
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./dist/cfdmod-${{ env.VERSION }}-py3-none-any.whl
-          asset_name: ./dist/cfdmod-release-${{ env.VERSION }}-py3-none-any.whl
-          asset_content_type: application/zip
+          files: |
+            lnas-${{ env.VERSION }}.tar.gz
+            lnas-${{ env.VERSION }}-py3-none-any.whl
