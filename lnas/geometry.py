@@ -21,7 +21,7 @@ class LnasGeometry:
     triangles: np.ndarray
 
     def __eq__(self, __o: object) -> bool:
-        if type(self) != type(__o):
+        if not isinstance(self, type(__o)):
             return False
         if not np.allclose(self.vertices, __o.vertices):
             return False

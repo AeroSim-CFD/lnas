@@ -23,20 +23,13 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install black[jupyter]
-          pip install isort
+          pip install black[jupyter] isort ruff
 
-      - name: Format files
-        run: |
-          black --config ./pyproject.toml .
-          isort .
+      - name: Run isort
+        run: isort --check-only .
 
-      - name: Check for changes after formatting
-        run: |
-          if [[ $(git status --porcelain) ]]; then
-            echo "Warning: Code must be formatted!" >&2
-            git status --porcelain
-            exit 1
-          else
-            echo "No formatting issues detected."
-          fi
+      - name: Run black
+        run: black --config ./pyproject.toml --check .
+
+      - name: Run ruff
+        run: ruff check .
