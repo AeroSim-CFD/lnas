@@ -9,7 +9,7 @@ import numpy as np
 
 from lnas import TransformationsMatrix
 from lnas.stl import stl_binary
-from transformations import apply_transformation_matrix
+from lnas.transformations import apply_transformation_matrix
 
 
 @dataclass
