@@ -190,7 +190,7 @@ def apply_transformation_matrix(
 
     Args:
         arr (np.ndarray): Array to apply transformation, shaped as [N, 3]
-        M (np.ndarray): Transformation to apply, shaped as [4, 4]. Same organization as OpenGL
+        M (np.ndarray): Transformation to apply, shaped as [4, 4]. Same logic as OpenGL
         arr_type (Literal["point", "vector"]): Array type to consider, "point" applies translation as well, "vector" doesn't
         invert_transf (bool, optional): Invert transformation matrix before applying. Defaults to False.
 
