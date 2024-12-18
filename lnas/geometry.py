@@ -9,6 +9,7 @@ import numpy as np
 
 from lnas import TransformationsMatrix
 from lnas.stl import stl_binary
+from transformations import apply_transformation_matrix
 
 
 @dataclass
@@ -154,6 +155,14 @@ class LnasGeometry:
         """Apply transformation in geometry"""
 
         self.vertices = transf.apply_points(self.vertices, invert_transf=invert_transf)
+        self._full_update()
+
+    def apply_transformation_matrix(self, M: np.ndarray, invert_transf: bool = False):
+        """Apply transformation in geometry"""
+
+        self.vertices = apply_transformation_matrix(
+            self.vertices, M, arr_type="point", invert_transf=invert_transf
+        )
         self._full_update()
 
     def binary_stl(self) -> bytes:
