@@ -2,7 +2,7 @@ import pathlib
 
 import numpy as np
 
-from lnas import LnasFormat, LnasGeometry, transformations
+from lnas import LnasFormat
 from lnas.transformations import TransformationsMatrix
 
 
