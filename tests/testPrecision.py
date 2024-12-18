@@ -38,15 +38,22 @@ def test_precision_transform_stl():
     t2 = TransformationsMatrix(angle=to_np_arr((0, 0, 1.3264502315156903)))
     t3 = TransformationsMatrix(scale=to_np_arr((0.00625, 0.00625, 0.00625)))
 
-    print(lnas_fmt.geometry.triangle_vertices.dtype)
+    # print(lnas_fmt.geometry.vertices[0, 0])
+    # vertices_invalid = lnas_fmt.geometry.vertices.copy()
+    # vertices_invalid[0, :] = np.nan
+    # lnas_fmt.geometry.vertices = vertices_invalid
+
+    # print(lnas_fmt.geometry.triangle_vertices.dtype)
     assert not np.any(np.isnan(lnas_fmt.geometry.triangle_vertices))
+    assert not np.any(np.isnan(lnas_fmt.geometry.areas))
+    assert not np.any(np.isnan(lnas_fmt.geometry.normals))
+
     for t in (t1, t2, t3):
         print("transformation", t)
         lnas_fmt.geometry.apply_transformation(t)
         lnas_fmt.geometry._full_update()
-    assert not np.any(np.isnan(lnas_fmt.geometry.triangle_vertices))
-    assert not np.any(np.isnan(lnas_fmt.geometry.areas))
-    assert not np.any(np.isnan(lnas_fmt.geometry.normals))
+        assert not np.any(np.isnan(lnas_fmt.geometry.areas))
+        assert not np.any(np.isnan(lnas_fmt.geometry.normals))
 
     filename = pathlib.Path("output/precision_test.stl")
     lnas_fmt.export_stl(filename)
