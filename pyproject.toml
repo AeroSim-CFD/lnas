@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lnas"
-version = "0.5.0"
+version = "0.6.0"
 description = "API for Lagrangian Nassu"
 authors = ["Waine Oliveira Jr <waine@aerosim.io>"]
 readme = "README.md"

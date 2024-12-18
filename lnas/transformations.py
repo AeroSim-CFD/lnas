@@ -170,29 +170,49 @@ class TransformationsMatrix:
     def apply(
         self, arr: np.ndarray, arr_type: Literal["point", "vector"], invert_transf: bool = False
     ) -> np.ndarray:
-        if arr.shape[1] != 3:
-            raise ValueError("Array points must be 3D to be transformed")
-        # Point transformation appends 1 (has translation), vector appends 0 (no translation)
-        if arr_type == "point":
-            col_add = np.ones((arr.shape[0], 1), dtype=arr.dtype)
-        elif arr_type == "vector":
-            col_add = np.zeros((arr.shape[0], 1), dtype=arr.dtype)
-
         M = self.transformation_matrix
-        if invert_transf:
-            M = np.linalg.inv(M)
-
-        # Add column to operate transformation
-        arr_transf = np.append(arr, col_add, axis=1)
-        # Apply transformation
-        arr_transf = np.matmul(M, arr_transf.T)
-        # Remove 0 or 1 added
-        arr_transf = arr_transf.T[:, :3]
-
-        return arr_transf
+        return apply_transformation_matrix(arr, M, arr_type, invert_transf)
 
     def apply_points(self, arr: np.ndarray, invert_transf: bool = False) -> np.ndarray:
         return self.apply(arr, arr_type="point", invert_transf=invert_transf)
 
     def apply_vectors(self, arr: np.ndarray, invert_transf: bool = False) -> np.ndarray:
         return self.apply(arr, arr_type="vector", invert_transf=invert_transf)
+
+
+def apply_transformation_matrix(
+    arr: np.ndarray,
+    M: np.ndarray,
+    arr_type: Literal["point", "vector"],
+    invert_transf: bool = False,
+) -> np.ndarray:
+    """Apply transformation matrix T to array of points arr
+
+    Args:
+        arr (np.ndarray): Array to apply transformation, shaped as [N, 3]
+        M (np.ndarray): Transformation to apply, shaped as [4, 4]. Same logic as OpenGL
+        arr_type (Literal["point", "vector"]): Array type to consider, "point" applies translation as well, "vector" doesn't
+        invert_transf (bool, optional): Invert transformation matrix before applying. Defaults to False.
+
+    Returns:
+        np.ndarray: Points transformed
+    """
+
+    if arr.shape[1] != 3:
+        raise ValueError("Array points must be 3D to be transformed")
+    # Point transformation appends 1 (has translation), vector appends 0 (no translation)
+    if arr_type == "point":
+        col_add = np.ones((arr.shape[0], 1), dtype=arr.dtype)
+    elif arr_type == "vector":
+        col_add = np.zeros((arr.shape[0], 1), dtype=arr.dtype)
+
+    if invert_transf:
+        M = np.linalg.inv(M)
+
+    # Add column to operate transformation
+    arr_transf = np.append(arr, col_add, axis=1)
+    # Apply transformation
+    arr_transf = np.matmul(M, arr_transf.T)
+    # Remove 0 or 1 added
+    arr_transf = arr_transf.T[:, :3]
+    return arr_transf
