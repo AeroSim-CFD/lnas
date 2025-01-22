@@ -1,9 +1,14 @@
 [tool.poetry]
-name = "lnas"
+name = "aerosim-lnas"
 version = "0.6.0"
 description = "API for Lagrangian Nassu"
 authors = ["Waine Oliveira Jr <waine@aerosim.io>"]
 readme = "README.md"
+license = "Apache-2.0"
+repository = "https://github.com/AeroSim-CFD/lnas"
+homepage = "https://github.com/AeroSim-CFD/lnas"
+
+packages = [{ include = "lnas" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"

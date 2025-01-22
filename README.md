@@ -1,4 +1,4 @@
-# lnas
+# LNAS
 
 API for Lagrangian Nassu (.lnas) geometry
 
