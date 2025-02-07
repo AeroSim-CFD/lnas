@@ -1,29 +1,37 @@
-[tool.poetry]
+[project]
 name = "aerosim-lnas"
 version = "0.6.0"
 description = "API for Lagrangian Nassu"
-authors = ["Waine Oliveira Jr <waine@aerosim.io>"]
+authors = [{ name = "Waine Oliveira Jr", email = "waine@aerosim.io" }]
+requires-python = "~=3.10"
 readme = "README.md"
 license = "Apache-2.0"
-repository = "https://github.com/AeroSim-CFD/lnas"
-homepage = "https://github.com/AeroSim-CFD/lnas"
+dependencies = [
+    "numpy>=1.26.2,<2",
+    "ruamel-yaml>=0.18.5,<0.19",
+]
 
-packages = [{ include = "lnas" }]
+[project.urls]
+Homepage = "https://github.com/AeroSim-CFD/lnas"
+Repository = "https://github.com/AeroSim-CFD/lnas"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-numpy = "^1.26.2"
-ruamel-yaml = "^0.18.5"
+[dependency-groups]
+dev = [
+    "black>=23.11.0,<24",
+    "isort>=5.12.0,<6",
+    "pytest>=8.3.2,<9",
+    "ruff>=0.6.8,<0.7",
+]
 
-[tool.poetry.group.dev.dependencies]
-black = "^23.11.0"
-isort = "^5.12.0"
-pytest = "^8.3.2"
-ruff = "^0.6.8"
+[tool.hatch.build.targets.sdist]
+include = ["lnas"]
+
+[tool.hatch.build.targets.wheel]
+include = ["lnas"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.black]
 exclude = '''
