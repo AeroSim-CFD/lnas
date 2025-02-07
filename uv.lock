@@ -3,7 +3,7 @@ requires-python = ">=3.10, <4"
 
 [[package]]
 name = "aerosim-lnas"
-version = "0.6.0"
+version = "0.6.1"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
