@@ -23,7 +23,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
           pip install uv
 
       - name: Build the project with uv

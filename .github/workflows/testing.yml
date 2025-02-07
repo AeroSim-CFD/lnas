@@ -25,7 +25,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
           pip install .
           pip install pytest
 
