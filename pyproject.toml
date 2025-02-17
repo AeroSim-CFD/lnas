@@ -7,8 +7,8 @@ requires-python = "~=3.10"
 readme = "README.md"
 license = "Apache-2.0"
 dependencies = [
-    "numpy>=1.26.2,<2",
-    "ruamel-yaml>=0.18.5,<0.19",
+    "numpy>=1.24",
+    "ruamel-yaml>=0.18.5",
 ]
 
 [project.urls]
@@ -17,10 +17,10 @@ Repository = "https://github.com/AeroSim-CFD/lnas"
 
 [dependency-groups]
 dev = [
-    "black>=23.11.0,<24",
-    "isort>=5.12.0,<6",
-    "pytest>=8.3.2,<9",
-    "ruff>=0.6.8,<0.7",
+    "black>=23.11.0",
+    "isort>=5.12.0",
+    "pytest>=8.3.2",
+    "ruff>=0.6.8",
 ]
 
 [tool.hatch.build.targets.sdist]
