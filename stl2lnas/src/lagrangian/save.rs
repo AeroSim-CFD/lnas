@@ -3,13 +3,13 @@ use crate::utils::create_folder_for_filename;
 use std::error::Error;
 use std::{fs, path};
 
-use serde_yaml;
+use serde_yml;
 
 pub fn save_lnas(filename: &path::Path, lnas_obj: &LNAS) -> Result<(), Box<dyn Error>> {
     create_folder_for_filename(filename)?;
     let file = fs::File::create(filename)?;
     println!("Saving...");
-    serde_yaml::to_writer(file, &lnas_obj)?;
+    serde_yml::to_writer(file, &lnas_obj)?;
 
     return Ok(());
 }
