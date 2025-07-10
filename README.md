@@ -14,6 +14,7 @@ After that, you may convert your STL files.
 To run `stl2lnas` from anywhere on your system, run the commands below
 
 ```bash
+cd stl2lnas
 # Build release version
 cargo build --release
 # Copy the executable to your system's PATH
