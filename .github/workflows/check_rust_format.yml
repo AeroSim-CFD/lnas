@@ -1,0 +1,35 @@
+name: Check Codebase formatting
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Cancel previous jobs that are running
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+      - name: Format files
+        run: |
+          cargo fmt
+
+      - name: Check for changes after formatting
+        run: |
+          if [[ $(git status --porcelain) ]]; then
+            echo "Warning: Code must be formatted!" >&2
+            git status --porcelain
+            exit 1
+          else
+            echo "No formatting issues detected."
+          fi
