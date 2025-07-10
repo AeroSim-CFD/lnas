@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import io
 import pathlib
 from dataclasses import dataclass
 from typing import Any
@@ -9,9 +10,11 @@ import numpy as np
 
 from lnas import LnasGeometry
 from lnas.exceptions import LnasVersionError
+from lnas.stl import read_stl
 from lnas.utils import read_yaml, save_yaml
 
 _SUPPORTED_MAJOR_VERSIONS = ("v0.5", "v0.4")
+_CURRENT_VERSION = "v0.5.1"
 
 
 @dataclass
@@ -134,8 +137,35 @@ class LnasFormat:
         return dct
 
     @classmethod
+    def from_triangles(
+        cls, triangles: np.ndarray, normals: np.ndarray, check_normals: bool = True
+    ) -> LnasFormat:
+        """Create LNAS format from triangles"""
+
+        n_triangles = triangles.shape[0]
+        triangles_idxs = np.arange(n_triangles * 3).reshape((n_triangles, 3))
+
+        vertices = triangles.reshape((n_triangles * 3, 3))
+        geometry = LnasGeometry(vertices=vertices, triangles=triangles_idxs)
+        if check_normals:
+            geometry.correct_inverted_normals(normals)
+
+        return cls(version=_CURRENT_VERSION, geometry=geometry, surfaces={})
+
+    @classmethod
+    def from_stl(cls, filename: pathlib.Path) -> LnasFormat:
+        """Load lagrangian format from STL file"""
+
+        with open(filename, "rb") as f:
+            triangles, normals = read_stl(io.BytesIO(f.read()))
+        return cls.from_triangles(triangles, normals, check_normals=True)
+
+    @classmethod
     def from_file(cls, filename: pathlib.Path) -> LnasFormat:
         """Load lagrangian format from file"""
+
+        if filename.name.endswith(".stl"):
+            return cls.from_stl(filename)
 
         try:
             dct_lnas = read_yaml(filename)

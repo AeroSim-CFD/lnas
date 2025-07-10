@@ -233,3 +233,47 @@ def test_export_stl():
     geometry = LnasFormat.from_file(lnas_filename)
     filename = pathlib.Path("output/test.stl")
     geometry.export_stl(filename)
+
+
+def test_from_stl():
+    filename_stl = pathlib.Path("fixture/cube_no_norm.stl")
+    LnasFormat.from_file(filename_stl)
+
+
+def test_from_stl_ordering():
+    filename_stl = pathlib.Path("fixture/cube_no_norm.stl")
+    lnas_orig = LnasFormat.from_file(filename_stl)
+
+    geom = lnas_orig.geometry
+    triangles_inverted = geom.triangle_vertices.copy()
+    triangles_inverted[:, 1] = geom.triangle_vertices[:, 2]
+    triangles_inverted[:, 2] = geom.triangle_vertices[:, 1]
+
+    lnas_tri_correct = LnasFormat.from_triangles(
+        triangles_inverted, geom.normals, check_normals=True
+    )
+    lnas_tri_inverted = LnasFormat.from_triangles(
+        triangles_inverted, geom.normals, check_normals=False
+    )
+
+    np.testing.assert_almost_equal(
+        lnas_tri_correct.geometry.normals, lnas_orig.geometry.normals, decimal=4
+    )
+    np.testing.assert_almost_equal(
+        lnas_tri_correct.geometry.areas, lnas_orig.geometry.areas, decimal=4
+    )
+    np.testing.assert_almost_equal(
+        lnas_tri_correct.geometry.vertices_normals, lnas_orig.geometry.vertices_normals, decimal=4
+    )
+
+    np.testing.assert_almost_equal(
+        lnas_tri_inverted.geometry.normals, -lnas_orig.geometry.normals, decimal=4
+    )
+    np.testing.assert_almost_equal(
+        lnas_tri_inverted.geometry.areas, lnas_orig.geometry.areas, decimal=4
+    )
+    np.testing.assert_almost_equal(
+        lnas_tri_inverted.geometry.vertices_normals,
+        -lnas_orig.geometry.vertices_normals,
+        decimal=4,
+    )

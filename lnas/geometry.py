@@ -38,6 +38,18 @@ class LnasGeometry:
 
         self._triangles_vertices = verts.reshape(nt, 3, 3)
 
+    def correct_inverted_normals(self, normals_correct: np.ndarray):
+        self._update_normals()
+        # Negative product means normal is inverted
+        dot_prod = np.sum(self.normals * normals_correct, axis=1)
+        swap_pos = dot_prod < 0
+        if np.sum(swap_pos) > 0:
+            v1 = self.triangles[:, 1].copy()
+            v2 = self.triangles[:, 2].copy()
+            self.triangles[:, 1] = v2
+            self.triangles[:, 2] = v1
+            self._full_update()
+
     def copy(self):
         vertices = self.vertices.copy()
         triangles = self.triangles.copy()
