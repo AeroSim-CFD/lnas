@@ -22,14 +22,5 @@ jobs:
 
       - name: Format files
         run: |
-          cargo fmt
-
-      - name: Check for changes after formatting
-        run: |
-          if [[ $(git status --porcelain) ]]; then
-            echo "Warning: Code must be formatted!" >&2
-            git status --porcelain
-            exit 1
-          else
-            echo "No formatting issues detected."
-          fi
+          cd stl2lnas
+          cargo fmt --check
