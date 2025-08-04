@@ -1,0 +1,67 @@
+name: Rust Build
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.release.id }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: 
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-latest, target: aarch64-unknown-linux-gnu }
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install additional tools for ARM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libgcc-9-dev-arm64-cross libstdc++-9-dev-arm64-cross libc6-dev-arm64-cross
+        if: matrix.platform.target == 'aarch64-unknown-linux-gnu'
+
+      - name: Set linker for ARM
+        run: |
+          export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+          export RUSTFLAGS="-C linker=aarch64-linux-gnu-gcc"
+        if: matrix.platform.target == 'aarch64-unknown-linux-gnu'
+
+      - name: Install Visual Studio Build Tools (MSVC)
+        run: |
+          choco install visualstudio2019buildtools
+          choco install visualstudio2019-workload-vctools
+        if: matrix.platform.target == 'x86_64-pc-windows-msvc'
+
+      - name: Set up Rust
+        run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+        shell: bash
+
+      - name: Install target
+        run: rustup target add ${{ matrix.platform.target }}
+
+      - name: Build the project in release mode
+        run: |
+          cd stl2lnas
+          cargo build --release --target ${{ matrix.platform.target }}
+
+      - name: Upload Release Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./stl2lnas/target/${{ matrix.platform.target }}/release/stl2lnas${{ matrix.platform.os == 'windows-latest' && '.exe' || '' }}
+          asset_name: stl2lnas-${{ matrix.platform.target }}${{ matrix.platform.os == 'windows-latest' && '.exe' || '' }}
+          asset_content_type: application/octet-stream
+        if: github.event_name == 'release' && github.event.action == 'published'

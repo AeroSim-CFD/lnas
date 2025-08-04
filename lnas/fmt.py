@@ -14,7 +14,7 @@ from lnas.stl import read_stl
 from lnas.utils import read_yaml, save_yaml
 
 _SUPPORTED_MAJOR_VERSIONS = ("v0.5", "v0.4")
-_CURRENT_VERSION = "v0.5.1"
+_CURRENT_VERSION = "v0.5.2"
 
 
 @dataclass

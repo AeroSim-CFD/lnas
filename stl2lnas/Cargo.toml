@@ -1,0 +1,15 @@
+[package]
+name = "stl2lnas"
+authors = ["Waine Oliveira Jr <waine@aerosim.io>"]
+default-run = "stl2lnas"
+version = "0.5.2"
+description = "Convert STL to LNAS files"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+base64 = "0.22.1"
+clap = { version = "4.5.41", features = ["derive"] }
+serde = { version = "1.0.193", features = ["derive"] }
+serde_yml = "0.0.12"

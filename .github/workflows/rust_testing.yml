@@ -1,0 +1,26 @@
+name: Rust testing
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Cancel previous jobs that are running
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+      - name: Run tests
+        run: |
+          cd stl2lnas
+          cargo test
