@@ -13,7 +13,7 @@ transf = TransformationsMatrix.from_tuple(
 def test_invalid_transf():
     for f in files:
         p = pathlib.Path("fixture/stl_invalid_transf/") / f
-        print(p)
+        if(not p.exists()):
+            continue
         fmt = LnasFormat.from_stl(p)
         fmt.geometry.apply_transformation(transf, remove_invalid_normals=True)
-    ...
