@@ -96,6 +96,22 @@ class TransformationsMatrix:
     # Always update matrixes
     always_update: bool = True
 
+    @classmethod
+    def from_tuple(
+        cls,
+        angle: tuple[float, float, float] = (0, 0, 0),
+        translation: tuple[float, float, float] = (0, 0, 0),
+        scale: tuple[float, float, float] = (1, 1, 1),
+        fixed_point: tuple[float, float, float] = (0, 0, 0),
+    ):
+        to_arr = lambda arr: np.array(arr, dtype="float32")
+        return TransformationsMatrix(
+            angle=to_arr(angle),
+            translation=to_arr(translation),
+            scale=to_arr(scale),
+            fixed_point=to_arr(fixed_point),
+        )
+
     def __hash__(self) -> int:
         return hash(
             (
