@@ -130,7 +130,7 @@ class LnasFormat:
         dct["geometry"] = self.geometry.to_dct()
         dct["surfaces"] = {}
         for surface_name, surface_arr in self.surfaces.items():
-            surface_bytes = surface_arr.tobytes(order="C")
+            surface_bytes = surface_arr.astype(np.uint32).tobytes(order="C")
             surface_b64 = base64.b64encode(surface_bytes)
             dct["surfaces"][surface_name] = str(surface_b64, encoding="utf-8")
 
