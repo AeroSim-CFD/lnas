@@ -1,9 +1,9 @@
 [project]
 name = "aerosim-lnas"
-version = "0.6.5"
+version = "0.6.6"
 description = "API for Lagrangian Nassu"
 authors = [{ name = "Waine Oliveira Jr", email = "waine@aerosim.io" }]
-requires-python = "~=3.10"
+requires-python = ">=3.10"
 readme = "README.md"
 license = "Apache-2.0"
 dependencies = [
