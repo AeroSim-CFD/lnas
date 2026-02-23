@@ -14,8 +14,6 @@ def stl_binary(triangles: np.ndarray, normals: np.ndarray) -> bytes:
         bytes: binary STL content
     """
 
-    if len(triangles) == 0:
-        raise ValueError("There must be triangles to export a STL")
     if len(triangles.shape) != 3 or triangles.shape[1] != 3 or triangles.shape[2] != 3:
         raise ValueError(f"Triangles shape must be (N, 3, 3) for STL. Shape is {triangles.shape}")
     if len(normals.shape) != 2 or normals.shape[1] != 3:
@@ -26,10 +24,6 @@ def stl_binary(triangles: np.ndarray, normals: np.ndarray) -> bytes:
         raise ValueError(
             f"Normal and triangles must have same N. triangles: {triangles}, normals: {normals}"
         )
-
-    # 80 bytes header
-    header_str = b"Aerosim Exported STL"
-    header_bytes = header_str.ljust(80, b"\00")
 
     n_triangles = len(triangles)
     # STL content is header + uint32 + 50 bytes per triangle
