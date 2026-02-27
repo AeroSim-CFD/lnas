@@ -25,6 +25,10 @@ def stl_binary(triangles: np.ndarray, normals: np.ndarray) -> bytes:
             f"Normal and triangles must have same N. triangles: {triangles}, normals: {normals}"
         )
 
+    # 80 bytes header
+    header_str = b"Aerosim Exported STL"
+    header_bytes = header_str.ljust(80, b"\00")
+
     n_triangles = len(triangles)
     # STL content is header + uint32 + 50 bytes per triangle
     stl_content = bytearray(len(header_bytes) + 4 + 50 * n_triangles)
