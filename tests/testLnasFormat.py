@@ -298,14 +298,8 @@ def test_from_stl_ordering_partial_inverted():
     triangles_partial[:half, 1] = geom.triangle_vertices[:half, 2]
     triangles_partial[:half, 2] = geom.triangle_vertices[:half, 1]
 
-    lnas_corrected = LnasFormat.from_triangles(
-        triangles_partial, geom.normals, check_normals=True
-    )
+    lnas_corrected = LnasFormat.from_triangles(triangles_partial, geom.normals, check_normals=True)
 
     # After correction every triangle must have the same normal as the original.
-    np.testing.assert_almost_equal(
-        lnas_corrected.geometry.normals, geom.normals, decimal=4
-    )
-    np.testing.assert_almost_equal(
-        lnas_corrected.geometry.areas, geom.areas, decimal=4
-    )
+    np.testing.assert_almost_equal(lnas_corrected.geometry.normals, geom.normals, decimal=4)
+    np.testing.assert_almost_equal(lnas_corrected.geometry.areas, geom.areas, decimal=4)
