@@ -80,7 +80,9 @@ def test_from_stl_matches_stl2lnas(stl_name: str):
     py_canon = _canonical_triangles(py_lnas)
     rust_canon = _canonical_triangles(rust_lnas)
     np.testing.assert_allclose(
-        py_canon, rust_canon, atol=1e-4,
+        py_canon,
+        rust_canon,
+        atol=1e-4,
         err_msg="Triangle vertex positions differ between Python and Rust",
     )
 

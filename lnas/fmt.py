@@ -178,12 +178,8 @@ class LnasFormat:
         flat_verts = triangles.reshape((n_triangles * 3, 3)).astype(np.float32)
         rounded = np.round(flat_verts, 5)
         contiguous = np.ascontiguousarray(rounded)
-        void_view = contiguous.view(
-            np.dtype((np.void, contiguous.dtype.itemsize * 3))
-        ).ravel()
-        _, unique_idx, inverse_idx = np.unique(
-            void_view, return_index=True, return_inverse=True
-        )
+        void_view = contiguous.view(np.dtype((np.void, contiguous.dtype.itemsize * 3))).ravel()
+        _, unique_idx, inverse_idx = np.unique(void_view, return_index=True, return_inverse=True)
 
         unique_verts = flat_verts[unique_idx]
         tri_indices = inverse_idx.reshape((n_triangles, 3)).astype(np.uint32)
