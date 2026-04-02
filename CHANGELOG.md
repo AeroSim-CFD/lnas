@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.6.9
+
+* `LnasFormat.from_stl` now matches the behaviour of the Rust `stl2lnas` command:
+  * Degenerate triangles (area < 1e-5) are discarded on load
+  * Vertices are deduplicated with 5-decimal-place precision
+  * A surface entry keyed by the file stem is populated automatically
+* Merged `feature/invalid-tri`: invalid normals during transformation now remove triangles instead of raising an error
+
 ## 0.6.8
 
 Bugs:

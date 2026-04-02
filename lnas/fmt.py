@@ -154,11 +154,51 @@ class LnasFormat:
 
     @classmethod
     def from_stl(cls, filename: pathlib.Path) -> LnasFormat:
-        """Load lagrangian format from STL file"""
+        """Load lagrangian format from STL file.
+
+        Matches the behaviour of the Rust stl2lnas command:
+        - Degenerate triangles (area < 1e-5) are discarded.
+        - Vertices are deduplicated with 5-decimal-place precision.
+        - A surface entry keyed by the file stem is added.
+        """
 
         with open(filename, "rb") as f:
             triangles, normals = read_stl(io.BytesIO(f.read()))
-        return cls.from_triangles(triangles, normals, check_normals=True)
+
+        # 1. Filter degenerate triangles (area < 1e-5)
+        e1 = triangles[:, 1] - triangles[:, 0]
+        e2 = triangles[:, 2] - triangles[:, 0]
+        areas = np.linalg.norm(np.cross(e1, e2), axis=1) / 2.0
+        valid = areas >= 1e-5
+        triangles = triangles[valid]
+        normals = normals[valid]
+
+        # 2. Deduplicate vertices with 5-decimal precision (matches Rust HashSet hashing)
+        n_triangles = triangles.shape[0]
+        flat_verts = triangles.reshape((n_triangles * 3, 3)).astype(np.float32)
+        rounded = np.round(flat_verts, 5)
+        contiguous = np.ascontiguousarray(rounded)
+        void_view = contiguous.view(
+            np.dtype((np.void, contiguous.dtype.itemsize * 3))
+        ).ravel()
+        _, unique_idx, inverse_idx = np.unique(
+            void_view, return_index=True, return_inverse=True
+        )
+
+        unique_verts = flat_verts[unique_idx]
+        tri_indices = inverse_idx.reshape((n_triangles, 3)).astype(np.uint32)
+
+        # 3. Build geometry and fix normals
+        geometry = LnasGeometry(vertices=unique_verts, triangles=tri_indices)
+        geometry.correct_inverted_normals(normals)
+
+        # 4. Surface named after file stem, covering all triangles
+        surface_indices = np.arange(n_triangles, dtype=np.uint32)
+        return cls(
+            version=_CURRENT_VERSION,
+            geometry=geometry,
+            surfaces={filename.stem: surface_indices},
+        )
 
     @classmethod
     def from_file(cls, filename: pathlib.Path) -> LnasFormat:
