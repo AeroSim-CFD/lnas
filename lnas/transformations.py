@@ -104,7 +104,9 @@ class TransformationsMatrix:
         scale: tuple[float, float, float] = (1, 1, 1),
         fixed_point: tuple[float, float, float] = (0, 0, 0),
     ):
-        to_arr = lambda arr: np.array(arr, dtype="float32")
+        def to_arr(arr):
+            return np.array(arr, dtype="float32")
+
         return TransformationsMatrix(
             angle=to_arr(angle),
             translation=to_arr(translation),
