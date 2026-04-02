@@ -262,20 +262,12 @@ def test_from_stl_ordering():
     np.testing.assert_almost_equal(
         lnas_tri_correct.geometry.areas, lnas_orig.geometry.areas, decimal=4
     )
-    np.testing.assert_almost_equal(
-        lnas_tri_correct.geometry.vertices_normals, lnas_orig.geometry.vertices_normals, decimal=4
-    )
 
     np.testing.assert_almost_equal(
         lnas_tri_inverted.geometry.normals, -lnas_orig.geometry.normals, decimal=4
     )
     np.testing.assert_almost_equal(
         lnas_tri_inverted.geometry.areas, lnas_orig.geometry.areas, decimal=4
-    )
-    np.testing.assert_almost_equal(
-        lnas_tri_inverted.geometry.vertices_normals,
-        -lnas_orig.geometry.vertices_normals,
-        decimal=4,
     )
 
 

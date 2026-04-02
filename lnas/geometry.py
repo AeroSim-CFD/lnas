@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import logging
 import pathlib
 from dataclasses import dataclass
 from typing import Any
@@ -10,6 +11,8 @@ import numpy as np
 from lnas import TransformationsMatrix
 from lnas.stl import stl_binary
 from lnas.transformations import apply_transformation_matrix
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -74,9 +77,28 @@ class LnasGeometry:
         V = triangle_points[:, 2, :] - triangle_points[:, 0, :]
         return np.cross(U, V)
 
-    def _update_normals(self):
+    def _remove_invalid_normals(self):
+        # Find rows where any element is NaN
+        invalid_mask = np.isnan(self._normals).any(axis=1)
+        num_removed = np.count_nonzero(invalid_mask)
+
+        if num_removed > 0:
+            # Keep only valid normals and triangles
+            self.triangles = self.triangles[~invalid_mask]
+            logger.warning(
+                f"{num_removed} triangles removed due to invalid normals. Triangles indexes changed"
+            )
+            self._full_update()
+
+    def _update_normals(self, remove_invalid_normals: bool = True):
         cross_prod = self._cross_prod()
+
+        # with np.errstate(invalid="ignore", divide="ignore"):
         self._normals = cross_prod / np.linalg.norm(cross_prod, axis=1)[:, np.newaxis]
+
+        if remove_invalid_normals:
+            self._remove_invalid_normals()
+
         if np.isnan(self._normals).any():
             raise ValueError("Invalid normals generated, there is a NaN value")
 
@@ -122,10 +144,10 @@ class LnasGeometry:
             self._update_areas()
         return self._areas
 
-    def _full_update(self):
+    def _full_update(self, remove_invalid_normals: bool = True):
         # ORDER IS IMPORTANT, one depends on the other
         self._update_triangles_vertices()
-        self._update_normals()
+        self._update_normals(remove_invalid_normals=remove_invalid_normals)
         self._update_areas()
         self._update_vertices_normals()
 
@@ -163,11 +185,16 @@ class LnasGeometry:
 
         return dct
 
-    def apply_transformation(self, transf: TransformationsMatrix, invert_transf: bool = False):
+    def apply_transformation(
+        self,
+        transf: TransformationsMatrix,
+        invert_transf: bool = False,
+        remove_invalid_normals: bool = True,
+    ):
         """Apply transformation in geometry"""
 
         self.vertices = transf.apply_points(self.vertices, invert_transf=invert_transf)
-        self._full_update()
+        self._full_update(remove_invalid_normals=remove_invalid_normals)
 
     def apply_transformation_matrix(self, M: np.ndarray, invert_transf: bool = False):
         """Apply transformation in geometry"""
