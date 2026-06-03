@@ -95,8 +95,8 @@ class LnasFormat:
         tri_idxs = np.arange(len(self.geometry.triangles), dtype=np.uint32)
         tri_idxs = tri_idxs[triangles_use]
 
+        # filter_triangles already runs _full_update on the new geometry.
         lnas_filtered = self.filter_triangles(triangles_use)
-        lnas_filtered.geometry._full_update()
 
         return (lnas_filtered.geometry, tri_idxs)
 
@@ -240,11 +240,12 @@ class LnasFormat:
                 + f"{len(triangles_use)} != {self.geometry.triangles.shape[0]}"
             )
 
-        geometry = self.geometry
-        filtered_triangles = geometry.triangles[triangles_use].copy()
-
-        new_geometry = self.geometry.copy()
-        new_geometry.triangles = filtered_triangles
+        # Build the filtered geometry directly; copying self.geometry first would
+        # duplicate the full triangle array only to overwrite it immediately.
+        new_geometry = LnasGeometry(
+            vertices=self.geometry.vertices.copy(),
+            triangles=self.geometry.triangles[triangles_use].copy(),
+        )
         new_geometry._full_update()
 
         # Build offset of filtered triangles considering past ones
