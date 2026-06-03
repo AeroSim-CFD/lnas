@@ -244,12 +244,9 @@ class LnasGeometry:
         smaller_end = (self.vertices <= end_arr).all(axis=1)
         bool_arr = np.logical_and(bigger_start, smaller_end)
 
-        bool_triangles = np.zeros((self.triangles.shape[0],), dtype=bool)
-        for t_idx, t in enumerate(self.triangles):
-            if any(bool_arr[v_idx] for v_idx in t):
-                bool_triangles[t_idx] = True
-
-        return bool_triangles
+        # A triangle is kept if any of its three vertices is inside the volume.
+        # Indexing the per-vertex mask by the triangle indices vectorizes the loop.
+        return bool_arr[self.triangles].any(axis=1)
 
     def join(self, geometries_list: list[LnasGeometry]):
         """Join into this geometry a list of LnasGeometry
