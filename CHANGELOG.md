@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+* Vectorized `LnasGeometry._update_vertices_normals` with `np.add.at`, removing the per-triangle Python loop that was `O(n_triangles)` interpreted and slow on large meshes (#18)
+
 ## 0.6.9
 
 * `LnasFormat.from_stl` now matches the behaviour of the Rust `stl2lnas` command:

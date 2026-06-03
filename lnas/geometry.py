@@ -116,16 +116,15 @@ class LnasGeometry:
         normals, areas, triangles = self.normals, self.areas, self.triangles
         vertices_normals = np.zeros((len(self.vertices), 3), dtype=np.float32)
 
-        # Add triangle normal to vertices, considering triangle area
-        for normal, triangle, area in zip(normals, triangles, areas):
-            for v_idx in triangle:
-                vertices_normals[v_idx] += normal * area
+        # Each triangle contributes normal * area to each of its three vertices.
+        # This scatter-add is the vectorized form of the per-triangle loop.
+        contrib = normals * areas[:, np.newaxis]
+        np.add.at(vertices_normals, triangles.ravel(), np.repeat(contrib, 3, axis=0))
+
         # Normalize normal to its norm
         norms = np.linalg.norm(vertices_normals, axis=1)
-        # Check where no vertex was used, to avoid division by zero
-        v_idxs_zero = (vertices_normals == 0).all(axis=1)
-        for v_idx in np.where(v_idxs_zero):
-            norms[v_idx] = 1
+        # Where no triangle was incident on the vertex, avoid division by zero
+        norms[norms == 0] = 1
 
         self._vertices_normals = vertices_normals / np.expand_dims(norms, axis=1)
 
