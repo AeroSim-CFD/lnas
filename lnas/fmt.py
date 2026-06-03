@@ -247,14 +247,12 @@ class LnasFormat:
         new_geometry.triangles = filtered_triangles
         new_geometry._full_update()
 
-        # Build offset of filtered triangles considering past ones
-        offset = 0
-        offsets_arr = np.zeros((triangles_use.shape[0],), dtype=np.int32)
-        for idx, v in enumerate(triangles_use):
-            if not v:
-                offset += 1
-            else:
-                offsets_arr[idx] = offset
+        # For each triangle, how many discarded triangles precede it - i.e. how
+        # much its index shifts down after filtering. This is the count of False
+        # entries strictly before each position, computed as a running sum.
+        # (Only kept positions are ever read below, so dropped slots stay valid.)
+        discarded = ~triangles_use
+        offsets_arr = (np.cumsum(discarded) - discarded).astype(np.int32)
 
         # Filter surfaces
         new_surfaces = {}
