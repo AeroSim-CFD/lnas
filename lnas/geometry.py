@@ -77,7 +77,7 @@ class LnasGeometry:
         V = triangle_points[:, 2, :] - triangle_points[:, 0, :]
         return np.cross(U, V)
 
-    def _remove_invalid_normals(self):
+    def _remove_invalid_normals(self) -> bool:
         # Find rows where any element is NaN
         invalid_mask = np.isnan(self._normals).any(axis=1)
         num_removed = np.count_nonzero(invalid_mask)
@@ -89,22 +89,39 @@ class LnasGeometry:
                 f"{num_removed} triangles removed due to invalid normals. Triangles indexes changed"
             )
             self._full_update()
+            return True
+        return False
 
-    def _update_normals(self, remove_invalid_normals: bool = True):
-        cross_prod = self._cross_prod()
+    def _update_normals(
+        self,
+        cross_prod: np.ndarray | None = None,
+        cross_norm: np.ndarray | None = None,
+        remove_invalid_normals: bool = True,
+    ) -> bool:
+        if cross_prod is None:
+            cross_prod = self._cross_prod()
+        if cross_norm is None:
+            cross_norm = np.linalg.norm(cross_prod, axis=1)
 
-        # with np.errstate(invalid="ignore", divide="ignore"):
-        self._normals = cross_prod / np.linalg.norm(cross_prod, axis=1)[:, np.newaxis]
+        # Degenerate triangles have a zero-length cross product; the resulting
+        # NaN normals are expected here and filtered out below, so ignore the
+        # divide warning instead of letting it leak to callers.
+        with np.errstate(invalid="ignore", divide="ignore"):
+            self._normals = cross_prod / cross_norm[:, np.newaxis]
 
+        removed = False
         if remove_invalid_normals:
-            self._remove_invalid_normals()
+            removed = self._remove_invalid_normals()
 
         if np.isnan(self._normals).any():
             raise ValueError("Invalid normals generated, there is a NaN value")
+        # True when triangles were dropped (a nested _full_update already ran)
+        return removed
 
-    def _update_areas(self):
-        cross_prod = self._cross_prod()
-        self._areas = np.linalg.norm(cross_prod, axis=1) / 2
+    def _update_areas(self, cross_norm: np.ndarray | None = None):
+        if cross_norm is None:
+            cross_norm = np.linalg.norm(self._cross_prod(), axis=1)
+        self._areas = cross_norm / 2
 
     @property
     def normals(self) -> np.ndarray:
@@ -146,8 +163,22 @@ class LnasGeometry:
     def _full_update(self, remove_invalid_normals: bool = True):
         # ORDER IS IMPORTANT, one depends on the other
         self._update_triangles_vertices()
-        self._update_normals(remove_invalid_normals=remove_invalid_normals)
-        self._update_areas()
+        # The triangle cross product (and its norm) feeds both the normals and
+        # the areas; compute it once here and share it to avoid recomputing the
+        # cross product twice per update on the geometry hot path.
+        cross_prod = self._cross_prod()
+        cross_norm = np.linalg.norm(cross_prod, axis=1)
+        removed = self._update_normals(
+            cross_prod=cross_prod,
+            cross_norm=cross_norm,
+            remove_invalid_normals=remove_invalid_normals,
+        )
+        if removed:
+            # _remove_invalid_normals dropped triangles and already ran a nested
+            # _full_update on the reduced set; the shared cross product is now
+            # stale, so that nested call produced the final state.
+            return
+        self._update_areas(cross_norm=cross_norm)
         self._update_vertices_normals()
 
     @classmethod

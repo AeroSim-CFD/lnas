@@ -4,6 +4,8 @@
 
 * Vectorized `LnasGeometry._update_vertices_normals` with `np.add.at`, removing the per-triangle Python loop that was `O(n_triangles)` interpreted and slow on large meshes (#18)
 * Vectorized `LnasGeometry.triangles_inside_volume`, replacing the per-triangle Python loop with a single masked index lookup
+* `LnasGeometry._full_update` now computes the triangle cross product (and its norm) once and shares it between normals and areas, instead of recomputing it twice per update on the geometry hot path
+* `LnasFormat.geometry_from_list_surfaces` no longer runs a redundant second `_full_update`, and `filter_triangles` no longer copies the full triangle array only to discard it
 * Vectorized the triangle-index offset computation in `LnasFormat.filter_triangles`, replacing the per-triangle Python loop with a cumulative sum
 
 Bugs:
