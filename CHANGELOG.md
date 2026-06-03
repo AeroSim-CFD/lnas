@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+* Vectorized `LnasGeometry.triangles_inside_volume`, replacing the per-triangle Python loop with a single masked index lookup
+
 ## 0.6.9
 
 * `LnasFormat.from_stl` now matches the behaviour of the Rust `stl2lnas` command:
