@@ -69,6 +69,26 @@ def test_geometry_filter_triangles_simple():
             assert not triangles_filtered[t_idx]
 
 
+def _vertices_normals_loop(geometry: LnasGeometry) -> np.ndarray:
+    """Reference per-triangle loop implementation, used for parity checks."""
+    normals, areas, triangles = geometry.normals, geometry.areas, geometry.triangles
+    vertices_normals = np.zeros((len(geometry.vertices), 3), dtype=np.float32)
+    for normal, triangle, area in zip(normals, triangles, areas):
+        for v_idx in triangle:
+            vertices_normals[v_idx] += normal * area
+    norms = np.linalg.norm(vertices_normals, axis=1)
+    norms[norms == 0] = 1
+    return vertices_normals / np.expand_dims(norms, axis=1)
+
+
+def test_vertices_normals_parity_with_loop():
+    cylinder = LnasFormat.from_file(pathlib.Path("fixture/cylinder.lnas"))
+    geometry = cylinder.geometry
+
+    expected = _vertices_normals_loop(geometry)
+    np.testing.assert_allclose(geometry.vertices_normals, expected, atol=1e-6)
+
+
 def test_geometry_filter_triangles_cylinder():
     filename = pathlib.Path("fixture/cylinder.lnas")
     cylinder = LnasFormat.from_file(filename)
