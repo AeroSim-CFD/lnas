@@ -5,6 +5,15 @@
 * Vectorized `LnasGeometry._update_vertices_normals` with `np.add.at`, removing the per-triangle Python loop that was `O(n_triangles)` interpreted and slow on large meshes (#18)
 * Vectorized `LnasGeometry.triangles_inside_volume`, replacing the per-triangle Python loop with a single masked index lookup
 * Vectorized binary STL read/write (`lnas.stl.read_stl` / `stl_binary`), replacing the per-triangle Python loops with a single structured-dtype buffer parse/build; output bytes are unchanged
+* `LnasGeometry._full_update` now computes the triangle cross product (and its norm) once and shares it between normals and areas, instead of recomputing it twice per update on the geometry hot path
+* `LnasFormat.geometry_from_list_surfaces` no longer runs a redundant second `_full_update`, and `filter_triangles` no longer copies the full triangle array only to discard it
+* Vectorized the triangle-index offset computation in `LnasFormat.filter_triangles`, replacing the per-triangle Python loop with a cumulative sum
+
+Bugs:
+
+* Fixed `LnasGeometry.__eq__` and `LnasFormat.__eq__` raising `AttributeError` when compared against a non-geometry/non-format object; they now return `False`
+* `LnasVersionError` now subclasses `Exception` instead of `BaseException`, so it is caught by normal `except Exception` handlers
+* `apply_transformation_matrix` now raises a clear `ValueError` for an unknown `arr_type` instead of failing later with an unbound-variable `NameError`
 
 ## 0.6.9
 

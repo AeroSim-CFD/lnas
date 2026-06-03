@@ -32,7 +32,7 @@ class LnasFormat:
     surfaces: dict[str, np.ndarray]
 
     def __eq__(self, __o: object) -> bool:
-        if not isinstance(self, type(__o)):
+        if not isinstance(__o, LnasFormat):
             return False
 
         if not (
@@ -95,8 +95,8 @@ class LnasFormat:
         tri_idxs = np.arange(len(self.geometry.triangles), dtype=np.uint32)
         tri_idxs = tri_idxs[triangles_use]
 
+        # filter_triangles already runs _full_update on the new geometry.
         lnas_filtered = self.filter_triangles(triangles_use)
-        lnas_filtered.geometry._full_update()
 
         return (lnas_filtered.geometry, tri_idxs)
 
@@ -240,21 +240,20 @@ class LnasFormat:
                 + f"{len(triangles_use)} != {self.geometry.triangles.shape[0]}"
             )
 
-        geometry = self.geometry
-        filtered_triangles = geometry.triangles[triangles_use].copy()
-
-        new_geometry = self.geometry.copy()
-        new_geometry.triangles = filtered_triangles
+        # Build the filtered geometry directly; copying self.geometry first would
+        # duplicate the full triangle array only to overwrite it immediately.
+        new_geometry = LnasGeometry(
+            vertices=self.geometry.vertices.copy(),
+            triangles=self.geometry.triangles[triangles_use].copy(),
+        )
         new_geometry._full_update()
 
-        # Build offset of filtered triangles considering past ones
-        offset = 0
-        offsets_arr = np.zeros((triangles_use.shape[0],), dtype=np.int32)
-        for idx, v in enumerate(triangles_use):
-            if not v:
-                offset += 1
-            else:
-                offsets_arr[idx] = offset
+        # For each triangle, how many discarded triangles precede it - i.e. how
+        # much its index shifts down after filtering. This is the count of False
+        # entries strictly before each position, computed as a running sum.
+        # (Only kept positions are ever read below, so dropped slots stay valid.)
+        discarded = ~triangles_use
+        offsets_arr = (np.cumsum(discarded) - discarded).astype(np.int32)
 
         # Filter surfaces
         new_surfaces = {}
