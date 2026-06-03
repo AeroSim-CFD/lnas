@@ -4,6 +4,7 @@
 
 * Vectorized `LnasGeometry._update_vertices_normals` with `np.add.at`, removing the per-triangle Python loop that was `O(n_triangles)` interpreted and slow on large meshes (#18)
 * Vectorized `LnasGeometry.triangles_inside_volume`, replacing the per-triangle Python loop with a single masked index lookup
+* Vectorized the triangle-index offset computation in `LnasFormat.filter_triangles`, replacing the per-triangle Python loop with a cumulative sum
 
 ## 0.6.9
 
