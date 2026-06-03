@@ -2,6 +2,19 @@ import io
 
 import numpy as np
 
+# One binary STL triangle record: a normal, three vertices and a 2-byte
+# attribute field, all little-endian, packed into exactly 50 bytes. Used to
+# read/write every triangle in a single vectorized NumPy operation.
+_STL_RECORD_DTYPE = np.dtype(
+    [
+        ("normal", "<f4", (3,)),
+        ("vertices", "<f4", (3, 3)),
+        ("attr", "<u2"),
+    ]
+)
+# Attribute byte count padding the previous loop wrote as b"__".
+_STL_ATTR_PADDING = 0x5F5F
+
 
 def stl_binary(triangles: np.ndarray, normals: np.ndarray) -> bytes:
     """Binary representation of triangles and its normals in STL format
@@ -25,29 +38,19 @@ def stl_binary(triangles: np.ndarray, normals: np.ndarray) -> bytes:
             f"Normal and triangles must have same N. triangles: {triangles}, normals: {normals}"
         )
 
-    # 80 bytes header
-    header_str = b"Aerosim Exported STL"
-    header_bytes = header_str.ljust(80, b"\00")
-
     n_triangles = len(triangles)
-    # STL content is header + uint32 + 50 bytes per triangle
-    stl_content = bytearray(len(header_bytes) + 4 + 50 * n_triangles)
 
-    # Add header and number of triangles
-    stl_content[: len(header_bytes)] = header_bytes
-    stl_content[len(header_bytes) : len(header_bytes) + 4] = np.uint32(n_triangles).tobytes()
+    # 80 bytes header + uint32 triangle count + 50 bytes per triangle.
+    header_bytes = b"Aerosim Exported STL".ljust(80, b"\00")
+    count_bytes = np.array(n_triangles, dtype="<u4").tobytes()
 
-    idx_curr = len(header_bytes) + 4
+    # Fill every triangle record in one shot instead of a per-triangle loop.
+    records = np.empty(n_triangles, dtype=_STL_RECORD_DTYPE)
+    records["normal"] = normals
+    records["vertices"] = triangles
+    records["attr"] = _STL_ATTR_PADDING
 
-    for idx, t_verts in enumerate(triangles):
-        p0, p1, p2 = [t_verts[0], t_verts[1], t_verts[2]]
-        normal = normals[idx]
-        t_arr = np.array([normal, p0, p1, p2], dtype=np.float32)
-
-        # Add triangles to STL content and 2 bytes padding
-        stl_content[idx_curr : idx_curr + 50] = t_arr.tobytes("C") + b"__"
-        idx_curr += 50
-    return stl_content
+    return header_bytes + count_bytes + records.tobytes()
 
 
 def read_stl(buff: io.BytesIO) -> tuple[np.ndarray, np.ndarray]:
@@ -63,19 +66,17 @@ def read_stl(buff: io.BytesIO) -> tuple[np.ndarray, np.ndarray]:
     # pass header
     buff.read(80)
     # Read number of triangles
-
-    n_triangles = np.frombuffer(buff.read(4), dtype=np.uint32)[0]
+    n_triangles = int(np.frombuffer(buff.read(4), dtype="<u4")[0])
     if n_triangles == 0:
         raise ValueError("Unable to read number of triangles as 0")
 
-    triangles = np.empty((n_triangles, 3, 3), dtype=np.float32)
-    normals = np.empty((n_triangles, 3), dtype=np.float32)
+    # Parse every 50-byte triangle record in a single vectorized read.
+    records = np.frombuffer(
+        buff.read(50 * n_triangles), dtype=_STL_RECORD_DTYPE, count=n_triangles
+    )
 
-    for idx in range(n_triangles):
-        content = buff.read(50)
-        normal = np.frombuffer(content[0:12], dtype=np.float32)
-        triangle = np.frombuffer(content[12:48], dtype=np.float32).reshape((3, 3))
-        triangles[idx] = triangle
-        normals[idx] = normal
+    # astype yields writable, contiguous copies (frombuffer is read-only).
+    triangles = records["vertices"].astype(np.float32)
+    normals = records["normal"].astype(np.float32)
 
     return triangles, normals
