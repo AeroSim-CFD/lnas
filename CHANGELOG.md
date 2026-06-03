@@ -5,6 +5,12 @@
 * Vectorized `LnasGeometry._update_vertices_normals` with `np.add.at`, removing the per-triangle Python loop that was `O(n_triangles)` interpreted and slow on large meshes (#18)
 * Vectorized `LnasGeometry.triangles_inside_volume`, replacing the per-triangle Python loop with a single masked index lookup
 
+Bugs:
+
+* Fixed `LnasGeometry.__eq__` and `LnasFormat.__eq__` raising `AttributeError` when compared against a non-geometry/non-format object; they now return `False`
+* `LnasVersionError` now subclasses `Exception` instead of `BaseException`, so it is caught by normal `except Exception` handlers
+* `apply_transformation_matrix` now raises a clear `ValueError` for an unknown `arr_type` instead of failing later with an unbound-variable `NameError`
+
 ## 0.6.9
 
 * `LnasFormat.from_stl` now matches the behaviour of the Rust `stl2lnas` command:

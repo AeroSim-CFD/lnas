@@ -32,7 +32,7 @@ class LnasFormat:
     surfaces: dict[str, np.ndarray]
 
     def __eq__(self, __o: object) -> bool:
-        if not isinstance(self, type(__o)):
+        if not isinstance(__o, LnasFormat):
             return False
 
         if not (

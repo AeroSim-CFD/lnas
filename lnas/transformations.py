@@ -223,6 +223,8 @@ def apply_transformation_matrix(
         col_add = np.ones((arr.shape[0], 1), dtype=arr.dtype)
     elif arr_type == "vector":
         col_add = np.zeros((arr.shape[0], 1), dtype=arr.dtype)
+    else:
+        raise ValueError(f"Invalid arr_type {arr_type!r}, must be 'point' or 'vector'")
 
     if invert_transf:
         M = np.linalg.inv(M)
