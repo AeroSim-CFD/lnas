@@ -1,0 +1,9 @@
+{
+  "name": "lnas",
+  "engineVersion": "v0.21.7",
+  "sdk": {
+    "source": "python"
+  },
+  "source": ".dagger",
+  "disableDefaultFunctionCaching": true
+}

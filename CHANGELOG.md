@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Migrated the CI *checks* (lint, Python tests, Rust tests, Rust format) off GitHub Actions to a Dagger pipeline defined as code in `.dagger/`, so the same checks run locally and on any runner (`dagger call --source=. check`); release/publish workflows stay in GitHub Actions
 * Vectorized `LnasGeometry._update_vertices_normals` with `np.add.at`, removing the per-triangle Python loop that was `O(n_triangles)` interpreted and slow on large meshes (#18)
 * Vectorized `LnasGeometry.triangles_inside_volume`, replacing the per-triangle Python loop with a single masked index lookup
 

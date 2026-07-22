@@ -53,6 +53,11 @@ uv run isort . && uv run black . && uv run ruff check --fix .
 cd stl2lnas && cargo test
 cd stl2lnas && cargo fmt --check     # CI checks this; run `cargo fmt` to fix
 cargo install --path stl2lnas        # build + install the `stl2lnas` binary on PATH
+
+# CI checks as code (Dagger) - runs the same containers CI runs; needs Docker + the dagger CLI
+dagger call --source=. check         # every check (lint, test, rust-test, rust-fmt)
+dagger call --source=. lint          # a single check
+dagger call --source=. test --python=3.11   # pytest on one interpreter
 ```
 
 **stl2lnas dependency for tests:** Some tests (the `from_stl` vs Rust parity suite in
@@ -115,13 +120,21 @@ tests do not need it.
   only when the on-disk layout changes, and update the supported-versions tuple accordingly.
 
 ## CI
-Pull requests must pass (all triggered on `pull_request` and pushes to `main`):
-- `testing.yml` - pytest across Python 3.10 / 3.11 / 3.12, with `stl2lnas` built via cargo
-- `linting.yml` - `isort --check-only`, `black --check`, `ruff check`
-- `rust_testing.yml` - `cargo test` in `stl2lnas/`
-- `check_rust_format.yml` - `cargo fmt --check` in `stl2lnas/`
+The CI **checks** are defined as code with [Dagger](https://dagger.io) in `.dagger/`
+(mirrors the `nassu`/`cfdmod` migration) - one pipeline that runs identically locally
+and on any runner. The single entrypoint is `dagger call --source=. check`, which runs
+these concurrently and fails if any fails:
+- `lint` - `isort --check-only`, `black --check`, `ruff check`
+- `test` - pytest across Python 3.10 / 3.11 / 3.12, with `stl2lnas` built on PATH
+- `rust-test` - `cargo test` in `stl2lnas/`
+- `rust-fmt` - `cargo fmt --check` in `stl2lnas/`
 
-Run the matching local command before pushing so CI is green on the first try.
+Run `dagger call --source=. check` (or the matching per-tool command) before pushing so
+CI is green on the first try. See `.dagger/README.md` for details.
+
+Release/publish automation stays in GitHub Actions (`.github/workflows/`), driven by
+GitHub `release` events and secrets: `rust_build.yml`, `release_artifacts.yml`,
+`publish_pypi.yml`.
 
 ## Output Formatting Rules
 - Never use a Unicode arrow; write `->` (hyphen + greater-than).
