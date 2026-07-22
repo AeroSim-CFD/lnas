@@ -41,6 +41,7 @@ exclude = '''
   | \.mypy_cache
   | \.tox
   | \.venv
+  | \.dagger
   | _build
   | buck-out
   | build
@@ -57,6 +58,10 @@ multi_line_output = 3
 line_length = 99
 src_paths = ["lnas", "tests", "scripts"]
 skip_glob = ["**/__init__.py"] # avoid circular imports
+# The .dagger/ CI module is a separate mini-project (its own pyproject.toml) and
+# .dagger/sdk/ is generated code - neither is linted with the main project config.
+extend_skip = [".dagger"]
+extend_skip_glob = ["**/.dagger/**"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -89,6 +94,7 @@ exclude = [
     "dist",
     "node_modules",
     "venv",
+    ".dagger",
 ]
 line-length = 99
 target-version = "py310"
